@@ -4,7 +4,6 @@ from PyQt5 import uic
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QIcon, QImage, QPainter, QPalette, QPixmap
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 import numpy as np
 import glob
@@ -522,7 +521,7 @@ class MyWindow(QMainWindow, form_class):
 
     def open_clicked(self):
         path = QFileDialog.getExistingDirectory(self, "Select Directory")
-        paths = glob.glob(path + '/*.jpg') + glob.glob(path + '/*.png')
+        paths = glob.glob(path + '/*.jpg') + glob.glob(path + '/*.png') + glob.glob(path + '/*.tif')
         paths.sort()
 
         if len(paths) > 0:
@@ -626,6 +625,9 @@ class MyWindow(QMainWindow, form_class):
 
     def draw_image(self):
         float_image = img_as_float(self.image)
+        # float_image = gaussian_filter(float_image, sigma=7)
+
+        # TODO: Multi-thread this by applying to different parts of image
 
         if self.method == 0:
             if self.just_mask == 0:
@@ -687,7 +689,7 @@ class MyWindow(QMainWindow, form_class):
 
     def update_image(self):
         self.spinBox.setValue(self.index)
-        self.image = io.imread(self.paths[self.index])
+        self.image = io.imread(self.paths[self.index])[:, :, :3] # Drops transparency values
         if self.save_path is not None:
             label = cv2.imread(self.save_path + '/' + self.paths[self.index].split('/')[-1])
             if label is not None:
